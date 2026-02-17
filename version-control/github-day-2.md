@@ -75,6 +75,7 @@ GitHub is a cloud platform for hosting Git repositories.
 **Private**
 - ✅ Only you (and invited guests) can see it.
 - ✅ Safe for experimentation/secret projects.
+- ✅ Ideal for proprietary code or company projects.
 - ❌ Doesn't build public visibility.
 
 ---
