@@ -92,7 +92,6 @@ git remote add origin https://github.com/user/repo.git
 - **Convention**: Everyone uses this name.
 - **Efficiency**: Faster than typing the full URL every time.
 - **Standard**: Git sets this as the default name.
-> note: How git sets it automatically? 
 
 ---
 
@@ -107,7 +106,6 @@ git remote add origin https://github.com/user/repo.git
 ```bash
 git push -u origin main
 ```
-> Is -u origin main only for the first time?
 
 ---
 
