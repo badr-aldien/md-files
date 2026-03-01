@@ -122,6 +122,8 @@ app.get('/about', (req, res) => {
 });
 ```
 
+> **Tip**: You can manually set the Content-Type using `res.type('.html');`.
+
 ---
 
 ## 5. Routing & Sending Files
