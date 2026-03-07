@@ -4,13 +4,186 @@ paginate: true
 backgroundColor: #f5f5f5
 ---
 
-# Node.js & Express - Day 2
+# Node.js Fundamentals - Day 2
 
 ### Badr Aldien Soliman
 
 ---
 
-## 1. NPM & NVM
+## 1. Clients & Servers
+
+### IP Addresses & Domains
+
+- **Hosts**: Computers connected to the internet that "host" websites.
+- **IP Address**: A unique numerical label (like a physical address) for every host (e.g., `172.217.10.14`).
+- **Domain Names**: Human-readable names (e.g., `google.com`) that are associated with specific IP addresses.
+
+---
+
+### Creating a Server
+
+We use the built-in `http` module to create a server that "listens" for browser requests.
+
+```javascript
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+  console.log('request made');
+});
+
+// Port number and host name
+server.listen(3000, 'localhost', () => {
+  console.log('listening for requests on port 3000');
+});
+```
+
+---
+
+### Requests & Responses
+
+The callback function in `createServer` gives us two vital objects:
+
+- **req (Request)**: Contains information about the incoming request (URL, method, headers).
+- **res (Response)**: Used to send data back to the browser.
+
+> **Important**: Every time you make a change to your server code, you must restart the file in the terminal.
+
+---
+
+### Sending a Response
+
+To send data back, we must set a **Response Header** so the browser knows what kind of data we are sending.
+
+**Option 1: Plain Text**
+
+```javascript
+res.setHeader('Content-Type', 'text/plain');
+res.write('hello, students');
+res.end();
+```
+
+---
+
+**Option 2: HTML Content**
+
+```javascript
+res.setHeader('Content-Type', 'text/html');
+res.write('<h1>Hello, World!</h1>');
+res.write('<p>Keep learning Node.js</p>');
+res.end();
+```
+
+---
+
+### Sending an HTML File
+
+Instead of writing HTML line by line, we can read a file from the file system and send it back.
+
+```javascript
+const fs = require('fs');
+
+fs.readFile('./ , (err, data) => {
+  if (err) {
+    console.log(err);
+    res.end();
+  } else {
+    // If it's just one file, we can pass data directly to end()
+    res.end(data);
+  }
+});
+```
+
+---
+
+## 2. Basic Routing
+
+Routing allows us to send different content based on the URL requested by the user.
+
+```javascript
+let path = './views/';
+
+switch (req.url) {
+  case '/':
+    path += 'index.html';
+    res.statusCode = 200; // Success
+    break;
+  case '/about':
+    path += 'about.html';
+    res.statusCode = 200; // Success
+    break;
+  default:
+    path += '404.html';
+    res.statusCode = 404; // Not Found
+    break;
+}
+```
+
+---
+
+### Status Codes
+
+Status codes tell the browser what happened to the request:
+
+- **200**: OK (Success)
+- **301**: Resource moved (Redirect)
+- **404**: Not Found (Error)
+- **500**: Internal Server Error
+
+---
+
+### Redirection
+
+Sometimes a page has moved, and we want to "redirect" the user to a new URL.
+
+```javascript
+case '/about-me':
+  res.statusCode = 301;
+  res.setHeader('Location', '/about');
+  res.end();
+  break;
+```
+
+---
+
+### Handling POST Requests
+
+By default, most requests are `GET`. To handle a `POST` request (like a form submission) in raw Node.js, we check the `req.method`.
+
+```javascript
+if (method === 'GET' && url === '/users') {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(users));
+  return;
+}
+```
+
+---
+
+### Handling the request body
+
+If we're receiving it as
+
+```bash
+  { "name": "John Doe" }
+```
+
+```javascript
+if (method === 'POST' && url === '/users') {
+  let body = '';
+  req.on('data', chunk => (body += chunk));
+  req.on('end', () => {
+    const { name } = JSON.parse(body);
+    users.push(name);
+    res.writeHead(201, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(users));
+  });
+  return;
+}
+```
+
+---
+
+## 3. NPM & NVM
 
 ### What is NPM?
 
@@ -40,7 +213,7 @@ npm init -y
 
 ---
 
-## 2. Dependencies & Nodemon
+## 4. Dependencies & Nodemon
 
 ### Installing Packages
 
@@ -60,7 +233,7 @@ npm install -g nodemon
 
 ---
 
-## 3. Project Files & Folders
+## 5. Project Files & Folders
 
 When you install packages, three important things appear:
 
@@ -89,259 +262,16 @@ npm run dev
 
 ---
 
-## 4. Introduction to Express
-
-Express is a fast, unopinionated, minimalist web framework for Node.js. It makes creating servers much easier.
-
-### Basic Setup
-
-```javascript
-const express = require('express');
-
-// Create an instance of an express app
-const app = express();
-
-// Listen for requests
-app.listen(3000);
-```
-
----
-
-### Handling Requests
-
-Express makes handling different URLs (routing) much cleaner than using the `http` module.
-
-```javascript
-app.get('/', (req, res) => {
-  // Express automatically sets Content-Type and Status Code!
-  res.send('<h1>Home Page</h1>');
-});
-
-app.get('/about', (req, res) => {
-  res.send('<p>About Page</p>');
-});
-```
-
-> **Tip**: You can manually set the Content-Type using `res.type('.html');`.
-
----
-
-## 5. Routing & Sending Files
-
-To send an actual HTML file, we use `res.sendFile()`.
-
-```javascript
-app.get('/', (req, res) => {
-  // We must provide an absolute path
-  res.sendFile('./views/index.html', { root: __dirname });
-});
-```
-
-- **`__dirname`**: Provides the absolute path to the current directory.
-- **`{ root: __dirname }`**: Tells Express exactly where to look for the relative path provided.
-
----
-
-## 6. Redirects & 404s
-
-### Redirecting Users
-
-If a URL has changed, Express makes it simple to point users elsewhere.
-
-```javascript
-app.get('/about-us', (req, res) => {
-  res.redirect('/about');
-});
-```
-
----
-
-### Handling 404 Errors (The Catch-All)
-
-We use `app.use()` to handle any request that didn't match the routes above.
-
-```javascript
-// This MUST be at the bottom of the file
-app.use((req, res) => {
-  res.status(404).sendFile('./views/404.html', { root: __dirname });
-});
-```
-
-> **Crucial Note**: Unlike `app.get()`, `app.use()` will fire for every single request. If it reaches this point, it means no previous routes matched, so we manually set `res.status(404)`.
-
----
-
-## 7. Middleware
-
-### What is Middleware?
-
-Middleware is code that runs on the server between receiving a request and sending a response. It has access to the `req` and `res` objects.
-
-**Order Matters**: Middleware runs in the order it is defined in your code (top to bottom).
-
----
-
-### Using `app.use()` & `next()`
-
-If we write our own middleware, we must call the `next()` function, or the browser will hang (it won't know to move to the next route/middleware).
-
-```javascript
-app.use((req, res, next) => {
-  console.log('New request made:');
-  console.log('Host: ', req.hostname);
-  console.log('Path: ', req.path);
-  console.log('Method: ', req.method);
-  next(); // Passes control to the next function
-});
-```
-
----
-
-### Static Files (Built-in Middleware)
-
-By default, Express blocks access to files in your project (like CSS or images) for security. We use `express.static` to make a folder "public".
-
-```javascript
-// Everything inside the 'public' folder is now accessible
-app.use(express.static('public'));
-```
-
-**Now in your HTML, you can link CSS simply:**
-`<link rel="stylesheet" href="/styles.css">`
-
----
-
-### Third-Party Middleware: Morgan
-
-Instead of writing our own logger, we can use **Morgan**.
-
-1.  **Install**: `npm install morgan`
-2.  **Usage**:
-
-```javascript
-const morgan = require('morgan');
-
-// 'dev' is a predefined logging format
-app.use(morgan('dev'));
-```
-
----
-
-## 8. POST Requests & Arrays
-
-To handle `POST` requests and store data in a simple array.
-
-### Middleware
-
-Express needs this to "parse" the request body:
-
-```javascript
-app.use(express.json());
-```
-
----
-
-### GET & POST Example
-
-```javascript
-let blogs = ['First Blog', 'Second Blog'];
-
-// GET: Read all blogs
-app.get('/blogs', (req, res) => {
-  res.json(blogs);
-});
-
-// POST: Add a new blog
-app.post('/blogs', (req, res) => {
-  blogs.push(req.body.title);
-  res.status(201).json(blogs);
-});
-```
-
-> **Comparison**: Unlike raw Node.js where we manually listened for 'data' events, Express (with middleware) does the hard work for us and gives us a clean `req.body` object.
-
----
-
-## 9. MVC & Controllers
-
-As your project grows, your `app.js` will become cluttered. We use **Controllers** to separate the logic from the route definitions.
-
-### 1. The Controller (`blogController.js`)
-
-We define all the logic for our routes here.
-
----
-
-```javascript
-const blog_all = (req, res) => {
-  console.log('GET all blogs');
-  res.send('All blogs');
-};
-
-const blog_create = (req, res) => {
-  console.log('POST a new blog');
-  res.send('Blog created');
-};
-
-const blog_update = (req, res) => {
-  console.log('UPDATE a blog');
-  res.send('Blog updated');
-};
-
-const blog_delete = (req, res) => {
-  console.log('DELETE a blog');
-  res.send('Blog deleted');
-};
-
-module.exports = { blog_all, blog_create, blog_update, blog_delete };
-```
-
----
-
-### 2. The Router (`blogRoutes.js`)
-
-We use `express.Router()` to connect the URLs to the controller functions.
-
-```javascript
-const express = require('express');
-const router = express.Router();
-const controller = require('../controllers/blogController');
-
-router.get('/', controller.blog_all);
-router.post('/', controller.blog_create);
-router.patch('/:id', controller.blog_update);
-router.delete('/:id', controller.blog_delete);
-
-module.exports = router;
-```
-
----
-
-### 3. Server Setup (`app.js`)
-
-```javascript
-const blogRoutes = require('./routes/blogRoutes');
-
-// Use the router for all /blogs routes
-app.use('/blogs', blogRoutes);
-```
-
----
-
 ## Summary Workflow
 
-1. **Setup**: Use `npm init -y` and install `nodemon`.
-2. **Organization**: Understand `package.json` scripts and `node_modules`.
-3. **Express**: Initialize the app and listen on a port.
-4. **Routing**: Use `app.get()` with `res.send()` or `res.sendFile()`.
-5. **Middleware**: Use `app.use()` for logging, static files, or third-party tools.
-6. **Finalize**: Add redirects and a 404 catch-all at the bottom.
-7. **POST Data**: Use `app.post()` and body-parsing middleware.
-8. **Arrays**: Store and retrieve data using simple arrays.
-9. **MVC**: Organize code using Controllers and Express Router.
+1. **HTTP & Servers**: Create servers and manage the req/res cycle (GET/POST).
+2. **Routing & Redirects**: Handle different URLs and status codes.
+3. **NPM & NVM**: Manage packages and Node versions.
+4. **Dependencies**: Install and use third-party packages like Nodemon.
+5. **Organization**: Understand `package.json` scripts and `node_modules`.
 
 ---
 
-# Read the error again
+# May your bugs be shallow
 
 ## **[badrsoliman.com](https://www.badrsoliman.com)**

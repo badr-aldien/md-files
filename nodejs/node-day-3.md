@@ -4,402 +4,260 @@ paginate: true
 backgroundColor: #f5f5f5
 ---
 
-# Mongoose & Schemas - Day 3
+# Node.js & Express - Day 3
 
 ### Badr Aldien Soliman
 
 ---
 
-## 1. Introduction to Mongoose
+## 1. Introduction to Express
 
-Mongoose is an **ODM** (Object Data Modeling) library for MongoDB and Node.js. It manages relationships between data, provides schema validation, and is used to translate between objects in code and the representation of those objects in MongoDB.
+Express is a fast, unopinionated, minimalist web framework for Node.js. It makes creating servers much easier.
 
-### Why use Mongoose?
-
-- **Schemas**: Defines the structure of your documents.
-- **Validation**: Ensures data follows specific rules before saving.
-- **Consistency**: Helps maintain a predictable data structure.
-
----
-
-## 2. Installation & Connection
-
-First, install the mongoose package in your project:
-
-```bash
-npm install mongoose
-```
-
-### Connecting to MongoDB
-
-We use `mongoose.connect()` to establish a connection to our database.
+### Basic Setup
 
 ```javascript
-const mongoose = require('mongoose');
+const express = require('express');
 
-const dbURI = 'mongodb://localhost:27017/my_database';
+// Create an instance of an express app
+const app = express();
 
-mongoose
-  .connect(dbURI)
-  .then(() => console.log('Connected to DB'))
-  .catch(err => console.log('Connection error:', err));
+// Listen for requests
+app.listen(3000);
 ```
 
 ---
 
-## 3. What is a Schema?
+### Handling Requests
 
-While MongoDB is schemaless (you can put any data in any collection), Mongoose allows us to define a **Schema**.
-
-A Schema defines the **shape** and **structure** of the documents inside a particular collection. It maps to a MongoDB collection and defines the types of data allowed.
-
----
-
-## 4. Creating a Schema & Model
-
-It is best practice to keep your schemas in a separate folder (e.g., `models/`).
-
-**`models/User.js`**
+Express makes handling different URLs (routing) much cleaner than using the `http` module.
 
 ```javascript
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-
-// 1. Define the Schema
-const userSchema = new Schema({
-  name: String,
-  age: Number,
+app.get('/', (req, res) => {
+  // Express automatically sets Content-Type and Status Code!
+  res.send('<h1>Home Page</h1>');
 });
 
-// 2. Create and Export the Model
-// 'User' will automatically look for a collection named 'users'
-module.exports = mongoose.model('User', userSchema);
-```
-
----
-
-## 5. Using the Model
-
-Once exported, we can use the model in our main file to interact with the database.
-
-### Method 1: New Instance & Save
-
-```javascript
-const User = require('./models/User');
-
-const newUser = new User({
-  name: 'John Doe',
-  age: 25,
-});
-
-newUser
-  .save()
-  .then(result => console.log('User Saved:', result))
-  .catch(err => console.log(err));
-```
-
----
-
-### Method 2: Model.create() (One-liner)
-
-Instead of creating an instance first, we can do it all in one step:
-
-```javascript
-User.create({
-  name: 'Jane Smith',
-  age: 30,
-})
-  .then(result => console.log('User Created:', result))
-  .catch(err => console.log(err));
-```
-
----
-
-## 6. Deep Dive: Schema Data Types
-
-Schemas can handle much more than just strings and numbers. Let's expand our `User` schema.
-
-```javascript
-const userSchema = new Schema({
-  name: String,
-  email: String,
-  hobbies: [String], // Array of strings
-  address: {
-    // Nested object
-    city: String,
-    zip: Number,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now, // Uses current date/time
-  },
-  updatedAt: Date,
+app.get('/about', (req, res) => {
+  res.send('<p>About Page</p>');
 });
 ```
 
 ---
 
-### Complex Schemas: Nested Schemas
+## 2. Routing & Sending Files
 
-If a nested object is complex, it's better to define it as its own schema first.
+To send an actual HTML file, we use `res.sendFile()`.
 
 ```javascript
-const addressSchema = new Schema({
-  city: String,
-  street: String,
-  zip: Number,
-});
-
-const userSchema = new Schema({
-  name: String,
-  address: addressSchema, // Using nested schema
+app.get('/', (req, res) => {
+  // We must provide an absolute path
+  res.sendFile('./views/index.html', { root: __dirname });
 });
 ```
 
----
-
-## 7. Handling Type Errors
-
-Mongoose performs **casting**. If you try to save a `String` into a field defined as a `Number`, Mongoose will try to convert it. If it fails, it throws a **ValidationError**.
-
-```javascript
-try {
-  await User.create({ age: 'Not A Number' });
-} catch (error) {
-  console.log('Error caught:', error.message);
-  // Output: User validation failed: age: Cast to Number failed...
-}
-```
-
-> **Tip**: You can provide a **custom error message** for most validators by passing an array instead of a single value: `required: [true, 'Please provide a name']`.
+- **`__dirname`**: Provides the absolute path to the current directory.
+- **`{ root: __dirname }`**: Tells Express exactly where to look for the relative path provided.
 
 ---
 
-## 8. Schema Validation
+## 3. Redirects & 404s
 
-We can pass an object to define rules like `required`, `lowercase`, and `immutable`.
+### Redirecting Users
+
+If a URL has changed, Express makes it simple to point users elsewhere.
 
 ```javascript
-const userSchema = new Schema({
-  username: {
-    type: String,
-    required: true,
-    lowercase: true,
-    minLength: 3,
-  },
-  registeredAt: {
-    type: Date,
-    immutable: true, // Cannot be changed once set
-    default: () => Date.now(),
-  },
+app.get('/about-us', (req, res) => {
+  res.redirect('/about');
 });
 ```
 
 ---
 
-### Number & String Validation
+### Handling 404 Errors (The Catch-All)
 
-- **Numbers**: `min`, `max`.
-- **Strings**: `minLength`, `maxLength`, `enum` (only allowed values).
+We use `app.use()` to handle any request that didn't match the routes above.
 
 ```javascript
-const productSchema = new Schema({
-  price: {
-    type: Number,
-    min: 1,
-    max: 1000,
-  },
-  category: {
-    type: String,
-    enum: ['Electronics', 'Books', 'Clothing'],
-  },
+// This MUST be at the bottom of the file
+app.use((req, res) => {
+  res.status(404).sendFile('./views/404.html', { root: __dirname });
+});
+```
+
+> **Crucial Note**: Unlike `app.get()`, `app.use()` will fire for every single request. If it reaches this point, it means no previous routes matched, so we manually set `res.status(404)`.
+
+---
+
+## 4. Middleware
+
+### What is Middleware?
+
+Middleware is code that runs on the server between receiving a request and sending a response. It has access to the `req` and `res` objects.
+
+**Order Matters**: Middleware runs in the order it is defined in your code (top to bottom).
+
+---
+
+### Using `app.use()` & `next()`
+
+If we write our own middleware, we must call the `next()` function, or the browser will hang (it won't know to move to the next route/middleware).
+
+```javascript
+app.use((req, res, next) => {
+  console.log('New request made:');
+  console.log('Host: ', req.hostname);
+  console.log('Path: ', req.path);
+  console.log('Method: ', req.method);
+  next(); // Passes control to the next function
 });
 ```
 
 ---
 
-## 9. Custom Validators
+### Static Files (Built-in Middleware)
 
-If built-in validators aren't enough, you can write your own manual validation logic.
+By default, Express blocks access to files in your project (like CSS or images) for security. We use `express.static` to make a folder "public".
 
 ```javascript
-const userSchema = new Schema({
-  age: {
-    type: Number,
-    validate: {
-      validator: function (v) {
-        return v % 2 === 0; // Only allow even numbers
-      },
-      message: props => `${props.value} is not an even number!`,
-    },
-  },
+// Everything inside the 'public' folder is now accessible
+app.use(express.static('public'));
+```
+
+**Now in your HTML, you can link CSS simply:**
+`<link rel="stylesheet" href="/styles.css">`
+
+---
+
+### Third-Party Middleware: Morgan
+
+Instead of writing our own logger, we can use **Morgan**.
+
+1.  **Install**: `npm install morgan`
+2.  **Usage**:
+
+```javascript
+const morgan = require('morgan');
+
+// 'dev' is a predefined logging format
+app.use(morgan('dev'));
+```
+
+---
+
+## 5. POST Requests & Arrays
+
+To handle `POST` requests and store data in a simple array.
+
+### Middleware
+
+Express needs this to "parse" the request body:
+
+```javascript
+app.use(express.json());
+```
+
+---
+
+### GET & POST Example
+
+```javascript
+let blogs = ['First Blog', 'Second Blog'];
+
+// GET: Read all blogs
+app.get('/blogs', (req, res) => {
+  res.json(blogs);
+});
+
+// POST: Add a new blog
+app.post('/blogs', (req, res) => {
+  blogs.push(req.body.title);
+  res.status(201).json(blogs);
 });
 ```
 
+> **Comparison**: Unlike raw Node.js where we manually listened for 'data' events, Express (with middleware) does the hard work for us and gives us a clean `req.body` object.
+
 ---
 
-## 10. Basic Queries
+## 6. MVC & Controllers
 
-Querying in Mongoose is **asynchronous**, so we always use `async/await` (or `.then()`).
+As your project grows, your `app.js` will become cluttered. We use **Controllers** to separate the logic from the route definitions.
 
-### `findById(id)`
+### 1. The Controller (`blogController.js`)
 
-Fetches a single document by its `_id`.
+We define all the logic for our routes here.
+
+---
 
 ```javascript
-const user = await User.findById('60d5ec123...');
+const blog_all = (req, res) => {
+  console.log('GET all blogs');
+  res.send('All blogs');
+};
+
+const blog_create = (req, res) => {
+  console.log('POST a new blog');
+  res.send('Blog created');
+};
+
+const blog_update = (req, res) => {
+  console.log('UPDATE a blog');
+  res.send('Blog updated');
+};
+
+const blog_delete = (req, res) => {
+  console.log('DELETE a blog');
+  res.send('Blog deleted');
+};
+
+module.exports = { blog_all, blog_create, blog_update, blog_delete };
 ```
 
 ---
 
-### `find({})`
+### 2. The Router (`blogRoutes.js`)
 
-Returns an **array** of all documents matching the criteria. Passing an empty object `{}` returns all documents in the collection.
+We use `express.Router()` to connect the URLs to the controller functions.
 
 ```javascript
-// Find all users named 'John'
-const users = await User.find({ name: 'John' });
+const express = require('express');
+const router = express.Router();
+const controller = require('../controllers/blogController');
 
-// Using operators in find
-const results = await User.find({
-  age: { $gt: 18 },
-  email: { $exists: true },
-});
+router.get('/', controller.blog_all);
+router.post('/', controller.blog_create);
+router.patch('/:id', controller.blog_update);
+router.delete('/:id', controller.blog_delete);
+
+module.exports = router;
 ```
 
 ---
 
-## 11. Deleting Documents
-
-### `deleteOne` & `deleteMany`
-
-- `deleteOne()`: Deletes the first document that matches the criteria.
-- `deleteMany()`: Deletes all documents that match.
+### 3. Server Setup (`app.js`)
 
 ```javascript
-await User.deleteOne({ name: 'John' });
-```
+const blogRoutes = require('./routes/blogRoutes');
 
----
-
-### ⚠️ Warning: Validation & Middleware
-
-Avoid using methods like `findOneAndDelete`, `findOneAndUpdate`, or `updateMany` unnecessarily.
-
-> **Note**: These methods **do not** trigger Mongoose schema validation by default. You can enable validation by passing `{ runValidators: true }`, and return the updated document with `{ new: true }`.
->
-> ```javascript
-> await User.findOneAndUpdate(
->   { name: 'John' },
->   { age: 30 },
->   { new: true, runValidators: true },
-> );
-> ```
-
----
-
-## 12. Chainable Query Building
-
-Mongoose provides a powerful, readable way to build queries using `.where()`.
-
-```javascript
-const users = await User.where('age')
-  .gt(18)
-  .lt(65)
-  .where('name')
-  .equals('Badr')
-  .limit(5) // Limit results to 5
-  .select('name age') // Only return 'name' and 'age' fields
-  .exec(); // Executes the query
-```
-
----
-
-## 13. Integration with Express
-
-Using Mongoose with Express allows you to create APIs that interact with your database.
-
-### `POST`: Create a Record
-
-```javascript
-app.post('/users', async (req, res) => {
-  try {
-    const user = await User.create(req.body);
-    res.status(201).json(user);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-```
-
----
-
-### `PUT`: Update a Record
-
-We use `findByIdAndUpdate` with `{ runValidators: true }` to ensure schema rules are followed during updates.
-
-```javascript
-app.put('/users/:id', async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, // Return the modified document
-      runValidators: true,
-    });
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-```
-
----
-
-## 14. Middleware: `pre` hooks
-
-Mongoose middleware (pre-hooks) allow you to run functions **before** certain events like saving or validating.
-
-### `pre('validate')`
-
-Runs before the document is validated against the schema. Good for formatting data (e.g., trimming strings).
-
-```javascript
-userSchema.pre('validate', function (next) {
-  this.name = this.name.trim(); // 'this' refers to the document
-  next();
-});
-```
-
----
-
-### `pre('save')`
-
-Runs before the document is saved to the database. Practical for updating timestamp fields or hashing passwords.
-
-```javascript
-userSchema.pre('save', function (next) {
-  this.updatedAt = Date.now();
-  console.log(`Saving user: ${this.name}...`);
-  next();
-});
+// Use the router for all /blogs routes
+app.use('/blogs', blogRoutes);
 ```
 
 ---
 
 ## Summary Workflow
 
-1. **Install**: Use `npm install mongoose`.
-2. **Connect**: Use `mongoose.connect()`.
-3. **Define Schema**: Specify structure and validation rules.
-4. **Export Model**: Use `mongoose.model()`.
-5. **Save Data**: Use `.save()` or `Model.create()`.
-6. **Queries**: Use `findById`, `find`, and `findOne`.
-7. **Deletion**: Use `deleteOne` or `deleteMany`.
-8. **Query Builder**: Use `.where()` to chain methods.
-9. **Express Integration**: Use models inside routes for REST APIs (POST, PUT, GET, DELETE).
-10. **Middleware**: Use `.pre()` hooks for logic before saving/validating.
+1. **Express**: Initialize the app and listen on a port.
+2. **Routing**: Use `app.get()` with `res.send()` or `res.sendFile()`.
+3. **Middleware**: Use `app.use()` for logging, static files, or third-party tools.
+4. **Finalize**: Add redirects and a 404 catch-all at the bottom.
+5. **POST Data**: Use `app.post()` and body-parsing middleware.
+6. **MVC**: Organize code using Controllers and Express Router.
 
 ---
 
-# Trust the Schema
+# Read the error again
 
 ## **[badrsoliman.com](https://www.badrsoliman.com)**
