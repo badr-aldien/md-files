@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Semantic HTML</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    header, nav, main, article, section, aside, footer, form {
+      border: 3px solid #333;
+      padding: 20px;
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    header  { background: #ffd966; }
+    nav     { background: #a8d8a8; }
+    main    { background: #a8c8f0; }
+    article { background: #d4aaff; }
+    section { background: #ffb347; }
+    aside   { background: #80deea; }
+    form    { background: #c8e6c9; }
+    footer  { background: #f48fb1; }
+
+    .main-row {
+      display: grid;
+      grid-template-columns: 1fr 250px;
+      gap: 10px;
+    }
+
+    .main-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>Header</header>
+
+  <nav>Nav</nav>
+
+  <div class="main-row">
+    <div class="main-col">
+      <main>Main</main>
+      <article>Article</article>
+      <section>Section</section>
+      <form>Form</form>
+    </div>
+    <aside>Aside</aside>
+  </div>
+
+  <footer>Footer</footer>
+
+</body>
+</html>

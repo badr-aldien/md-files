@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 2 Task: The Profile Card</title>
+    <!-- Task Requirements:
+        1. Use relative units (rem, em) for spacing and font sizes. No pixels!
+        2. Create a background with a linear-gradient.
+        3. Use Font Awesome for the social icons (link the CDN).
+        4. Add a "bio" section that has a fixed height and uses 'overflow: auto'.
+        5. Use a pseudo-class (:hover) to scale the card or change its shadow.
+        6. Use a pseudo-element (::before or ::after) to add a decorative line below the name.
+    -->
+    
+    <!-- Link Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* --- Student Task: Complete the CSS below --- */
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-width: 25rem;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        .profile-card {
+            width: var(--card-width);
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden; /* Clips the background header */
+            transition: transform 0.3s ease;
+            text-align: center;
+            padding-bottom: 2rem;
+        }
+
+        /* 1. Header with Gradient */
+        .card-header {
+            height: 10rem;
+            background: var(--primary-gradient);
+        }
+
+        /* 2. Image Circle */
+        .profile-img {
+            width: 8rem;
+            height: 8rem;
+            background: #fff;
+            border-radius: 50%;
+            margin: -4rem auto 1rem;
+            border: 0.3rem solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-img i {
+            font-size: 4rem; /* em for relative scaling to parent font size */
+            color: #764ba2;
+        }
+
+        /* 3. Name with Pseudo-element */
+        .name {
+            font-size: 1.8rem;
+            margin: 0.5rem 0;
+            position: relative;
+            display: inline-block;
+        }
+
+        /* TASK: Add a decorative line using ::after */
+        .name::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 20%;
+            width: 60%;
+            height: 3px;
+            background: #764ba2;
+            border-radius: 5px;
+        }
+
+        /* 4. Bio with Overflow */
+        .bio {
+            padding: 1.5rem;
+            height: 6rem; /* Fixed height to trigger overflow */
+            overflow-y: auto;
+            color: #666;
+            line-height: 1.6;
+            margin: 1rem 2rem;
+            border: 1px solid #eee;
+            border-radius: 0.5rem;
+        }
+
+        /* 5. Social Icons (rem based spacing) */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            color: #333;
+            font-size: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .social-links a:hover {
+            color: #667eea;
+        }
+
+        /* 6. Interaction: Hover effect on the whole card */
+        .profile-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Custom Scrollbar for the Bio */
+        .bio::-webkit-scrollbar {
+            width: 6px;
+        }
+        .bio::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <section class="profile-card">
+        <div class="card-header"></div>
+        
+        <div class="profile-img">
+            <i class="fa-solid fa-user"></i>
+        </div>
+
+        <h2 class="name">Your name</h2>
+        <p style="color: #999; margin: 0;">Full Stack Developer</p>
+
+        <div class="bio">
+            <p>
+                This is a scrollable bio area. Students should use the overflow property to handle this text. 
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                More text to make sure the scrollbar actually appears!
+            </p>
+        </div>
+
+        <div class="social-links">
+            <a href="#"><i class="fa-brands fa-facebook"></i></a>
+            <a href="#"><i class="fa-brands fa-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-github"></i></a>
+            <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+        </div>
+    </section>
+
+</body>
+</html>
