@@ -1,6 +1,6 @@
 ---
 marp: true
-theme: gaia
+theme: uncover
 paginate: true
 ---
 
@@ -109,8 +109,8 @@ You can control how columns behave within a row using `row-cols` classes:
 
 Control spacing between columns and rows:
 
-- `g-x-(1-5)` - Horizontal gaps
-- `g-y-(1-5)` - Vertical gaps
+- `gx-(1-5)` - Horizontal gaps
+- `gy-(1-5)` - Vertical gaps
 - `g-(1-5)` - Both horizontal and vertical gaps
 
 You can also use breakpoints with gaps: `g-md-3`, `g-lg-4`, etc.
